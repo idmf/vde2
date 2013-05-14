@@ -303,7 +303,7 @@ int vder_default_route(uint32_t gateway, int metric)
 
 /* Interface management */
 
-struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr, int port)
+struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr, int port, uint8_t iface_id)
 {
 	struct vder_iface *vif = (struct vder_iface *) malloc(sizeof(struct vder_iface)), *cur;
     struct vde_open_args open_args={.mode=0700};
@@ -334,7 +334,11 @@ struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr, int port)
 		vif->prio_q[i].prio_semaphore = &vif->prio_semaphore;
 	}
 
-	vif->interface_id = interfaces_list_lenght();
+	if (iface_id)
+		vif->interface_id = iface_id;
+	else
+		// FIXME this is now a bug regarding collisions
+		vif->interface_id = interfaces_list_lenght();
 	if (!macaddr)
 		new_macaddress(vif);
 	else

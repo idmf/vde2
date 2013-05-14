@@ -79,7 +79,7 @@ static int help(int fd,char *s)
 		return 0;
 	} else if (match_input("connect",arg)) {
 		printoutc(fd, "Syntax:");
-		printoutc(fd, "\tconnect <vde_sock_path> [<macaddress> [<port>]]");
+		printoutc(fd, "\tconnect <vde_sock_path> [<macaddress> [<port> [<devname>]]]");
 		printoutc(fd, "Connects to a vde socket at path <vde_sock_path> by creating a new virtual ethernet device.");
 		printoutc(fd, "If no <macaddress> is provided, it will be assigned automatically.");
 		printoutc(fd, "");
@@ -958,11 +958,12 @@ static int queue(int fd, char *s)
 static int doconnect(int fd,char *s)
 {
 	char *nextargs = NULL, *arg;
-	struct vder_iface *created = NULL;
+	struct vder_iface *created = NULL, *selected = NULL;
 	int mac[6];
 	uint8_t outmac[6], *newmac = NULL;
 	char sock[1024];
 	int port;
+	uint8_t iface_id;
 
 	arg = strtok_r(s, " ", &nextargs);
 	if (!arg) {
@@ -993,7 +994,21 @@ static int doconnect(int fd,char *s)
 		// FIXME type handling?
 		port = atoi(arg);
 	}
-	created = vder_iface_new(sock, newmac, port);
+	arg = strtok_r(NULL, " ", &nextargs);
+	selected = select_interface(arg);
+	if (selected)
+		return EINVAL;
+	else {
+	   if (strncmp(arg,"eth",3)) {
+		  return EINVAL;
+	   }
+
+	   if (not_a_number(arg + 3))
+		   return EINVAL;
+
+	   iface_id = strtol(arg + 3, NULL, 10);
+	}
+	created = vder_iface_new(sock, newmac, port, iface_id);
 	if (created == NULL)
 		return errno;
 	pthread_create(&created->sender, 0, vder_core_send_loop, created);
