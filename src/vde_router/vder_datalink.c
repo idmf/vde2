@@ -303,11 +303,13 @@ int vder_default_route(uint32_t gateway, int metric)
 
 /* Interface management */
 
-struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr)
+struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr, int port)
 {
 	struct vder_iface *vif = (struct vder_iface *) malloc(sizeof(struct vder_iface)), *cur;
     struct vde_open_args open_args={.mode=0700};
 	int i;
+	if (port)
+		open_args.port=port;
 	if (!vif)
 		return NULL;
 
@@ -337,6 +339,8 @@ struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr)
 		new_macaddress(vif);
 	else
 		memcpy(vif->macaddr, macaddr, 6);
+    if (port)
+        vif->port = port;
 	vif->arp_table = RB_ROOT;
 	vif->address_list = NULL;
 	vif->router = &Router;

@@ -31,12 +31,12 @@ int vder_ipaddress_is_broadcast(uint32_t addr);
 
 /* Interface management */
 
-struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr);
+struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr, int port);
 int vder_iface_address_add(struct vder_iface *iface, uint32_t addr, uint32_t netmask);
 int vder_iface_address_del(struct vder_iface *iface, uint32_t addr);
 int vder_sendto(struct vder_iface *iface, struct vde_buff *vb, uint8_t *dst);
 
-struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr);
+struct vder_iface *vder_iface_new(char *sock, uint8_t *macaddr, int port);
 int vder_iface_address_add(struct vder_iface *iface, uint32_t addr, uint32_t netmask);
 int vder_iface_address_del(struct vder_iface *iface, uint32_t addr);
 int vder_send(struct vder_iface *iface, struct vde_buff *vb, int len, uint8_t *dst);

@@ -144,6 +144,7 @@ struct vder_iface {
 	struct vder_iface *next;
 	struct vder_ip4address *address_list;
 	uint8_t macaddr[6];
+    int port;
 	VDECONN *vdec;
 	char vde_sock[1024];
 	struct rb_root arp_table;

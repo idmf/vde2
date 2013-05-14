@@ -79,7 +79,7 @@ static int help(int fd,char *s)
 		return 0;
 	} else if (match_input("connect",arg)) {
 		printoutc(fd, "Syntax:");
-		printoutc(fd, "\tconnect <vde_sock_path> [<macaddress>]");
+		printoutc(fd, "\tconnect <vde_sock_path> [<macaddress> [<port>]]");
 		printoutc(fd, "Connects to a vde socket at path <vde_sock_path> by creating a new virtual ethernet device.");
 		printoutc(fd, "If no <macaddress> is provided, it will be assigned automatically.");
 		printoutc(fd, "");
@@ -260,10 +260,10 @@ static int not_understood(int fd, char *s)
 static void show_ifconfig(int fd, struct vder_iface *iface)
 {
 	struct vder_ip4address *addr;
-	printoutc(fd, "Interface: eth%d mac:%02x:%02x:%02x:%02x:%02x:%02x sock:%s",
+	printoutc(fd, "Interface: eth%d mac:%02x:%02x:%02x:%02x:%02x:%02x sock:%s port:%d",
 					iface->interface_id, iface->macaddr[0],iface->macaddr[1],iface->macaddr[2],
 					iface->macaddr[3],iface->macaddr[4],iface->macaddr[5],
-					iface->vde_sock
+					iface->vde_sock,iface->port
 			 );
 	addr = iface->address_list;
 	while(addr) {
@@ -962,6 +962,7 @@ static int doconnect(int fd,char *s)
 	int mac[6];
 	uint8_t outmac[6], *newmac = NULL;
 	char sock[1024];
+	int port;
 
 	arg = strtok_r(s, " ", &nextargs);
 	if (!arg) {
@@ -987,7 +988,12 @@ static int doconnect(int fd,char *s)
 			newmac = outmac;
 		}
 	}
-	created = vder_iface_new(sock, newmac);
+	arg = strtok_r(NULL, " ", &nextargs);
+	if (arg) {
+		// FIXME type handling?
+		port = atoi(arg);
+	}
+	created = vder_iface_new(sock, newmac, port);
 	if (created == NULL)
 		return errno;
 	pthread_create(&created->sender, 0, vder_core_send_loop, created);
