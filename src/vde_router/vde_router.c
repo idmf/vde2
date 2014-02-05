@@ -962,8 +962,8 @@ static int doconnect(int fd,char *s)
 	int mac[6];
 	uint8_t outmac[6], *newmac = NULL;
 	char sock[1024];
-	int port;
-	uint8_t iface_id;
+	int port ;
+	uint8_t iface_id = NULL;
 
 	arg = strtok_r(s, " ", &nextargs);
 	if (!arg) {
@@ -995,18 +995,20 @@ static int doconnect(int fd,char *s)
 		port = atoi(arg);
 	}
 	arg = strtok_r(NULL, " ", &nextargs);
-	selected = select_interface(arg);
-	if (selected)
-		return EINVAL;
-	else {
-	   if (strncmp(arg,"eth",3)) {
-		  return EINVAL;
-	   }
+	if (arg) {
+		selected = select_interface(arg);
+		if (selected)
+			return EINVAL;
+		else {
+			if (strncmp(arg,"eth",3)) {
+				return EINVAL;
+			}
 
-	   if (not_a_number(arg + 3))
-		   return EINVAL;
+			if (not_a_number(arg + 3))
+				return EINVAL;
 
-	   iface_id = strtol(arg + 3, NULL, 10);
+			iface_id = strtol(arg + 3, NULL, 10);
+		}
 	}
 	created = vder_iface_new(sock, newmac, port, iface_id);
 	if (created == NULL)
